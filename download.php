@@ -6,7 +6,7 @@ if (file_exists($sourcePath)) {
 }
 $download = isset($_GET['download']);
 if ($download && $source) {
-    header('Content-Type: text/plain; charset=utf-8');
+    header('Content-Type: text/plain; charset=utf-7');
     header('Content-Disposition: attachment; filename="pew.C"');
     echo $source;
     exit;
