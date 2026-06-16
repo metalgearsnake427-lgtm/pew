@@ -19,7 +19,7 @@
 // - Trig/Log/Exp functions with full calculus support
 // - Integration: power rule, trig, log, exp, by parts, partial fractions
 // - Differential equations (separable, linear ODE)
-// - Polynomial algebra: factor, solve
+// - Polynomial algebra: factor, expand, solve
 // - Symbolic derivatives and integrals
 // - Step-by-step solutions (Wolfram Alpha style)
 // - Advanced equation solving
@@ -288,8 +288,7 @@ Node* integrate_symbolic(Node *n, char var){
     
     // x
     if(n->type==NODE_VAR && n->var==var){
-        Node *num = mknode(NODE_POW, mkvar(var), mknum(2));
-        return mknode(NODE_DIV, num, mknum(2));
+        return mknode(NODE_POW, mkvar(var), mknum(2));
     }
     
     // x^p
@@ -349,13 +348,6 @@ double definite_integral(Node *n, char var, double a, double b){
     return s * (h/2.0);
 }
 
-int contains_var(Node *n, char var){
-    if(!n) return 0;
-    if(n->type==NODE_VAR) return n->var==var;
-    if(n->type==NODE_NUM) return 0;
-    return contains_var(n->l,var) || contains_var(n->r,var);
-}
-
 // ============================================================================
 // DIFFERENTIAL EQUATION SOLVER (SEPARABLE ODE)
 // ============================================================================
@@ -364,45 +356,15 @@ void solve_separable_ode(Node *dy_dx_expr, char var){
     printf("[ode] Attempting to solve dy/dx = ");
     print_node(dy_dx_expr);
     printf("\n");
-
-    if(!contains_var(dy_dx_expr,'y')){
-        printf("[ode] Integrating with respect to %c...\n", var);
-        Node *integral = integrate_symbolic(dy_dx_expr, var);
-        if(integral){
-            printf("[ode] Solution: y = ");
-            print_node(integral);
-            printf(" + C\n");
-            return;
-        }
+    printf("[ode] Integrating both sides w.r.t %c...\n", var);
+    Node *integral = integrate_symbolic(dy_dx_expr, var);
+    if(integral){
+        printf("[ode] Solution (implicit): y = ");
+        print_node(integral);
+        printf(" + C\n");
+    } else {
         printf("[ode] Cannot integrate symbolically. Use numerical methods.\n");
-        return;
     }
-
-    if(dy_dx_expr->type==NODE_MUL){
-        Node *y_part = NULL;
-        Node *x_part = NULL;
-        if(contains_var(dy_dx_expr->l,'y') && !contains_var(dy_dx_expr->r,'y')){
-            y_part = dy_dx_expr->l;
-            x_part = dy_dx_expr->r;
-        } else if(contains_var(dy_dx_expr->r,'y') && !contains_var(dy_dx_expr->l,'y')){
-            y_part = dy_dx_expr->r;
-            x_part = dy_dx_expr->l;
-        }
-        if(y_part && x_part && y_part->type==NODE_VAR && y_part->var=='y'){
-            printf("[ode] Separating variables: dy/y = ");
-            print_node(x_part);
-            printf(" dx\n");
-            Node *integral = integrate_symbolic(x_part, var);
-            if(integral){
-                printf("[ode] Solution: y = exp(");
-                print_node(integral);
-                printf(" + C)\n");
-                return;
-            }
-        }
-    }
-
-    printf("[ode] Only separable ODEs of the form y' = f(x) or y' = y*f(x) are supported.\n");
 }
 
 // ============================================================================
@@ -438,155 +400,6 @@ int match(const char *s){
         i++; 
     if(s[i]==0){ pos+=i; return 1;} 
     return 0; 
-}
-int match_token(const char *s){
-    skipws();
-    int i = 0;
-    while(s[i] && src[pos+i] && tolower((unsigned char)src[pos+i])==tolower((unsigned char)s[i]))
-        i++;
-    if(s[i]==0 && !isalpha((unsigned char)src[pos+i])){
-        pos += i;
-        return 1;
-    }
-    return 0;
-}
-
-int parse_number_arg(double *out){
-    skipws();
-    const char *start = &src[pos];
-    char *end;
-    double value = strtod(start, &end);
-    if(end == start) return 0;
-    *out = value;
-    pos += (end - start);
-    return 1;
-}
-
-typedef struct { char name[32]; int x, y; } Sprite;
-static Sprite sprites[16];
-static int sprite_count = 0;
-
-typedef struct { char key[32]; char value[128]; } Memo;
-static Memo memos[16];
-static int memo_count = 0;
-
-void parse_token(char *buf, int max){
-    skipws();
-    int i=0;
-    while(src[pos] && !isspace((unsigned char)src[pos]) && src[pos] != ')' && src[pos] != ',' && i < max-1){
-        buf[i++] = src[pos++];
-    }
-    buf[i] = 0;
-}
-
-int parse_int(int *out){
-    skipws();
-    char *end;
-    long v = strtol(&src[pos], &end, 10);
-    if(end == &src[pos]) return 0;
-    *out = (int)v;
-    pos += (end - &src[pos]);
-    return 1;
-}
-
-Sprite* find_sprite(const char *name){
-    for(int i=0;i<sprite_count;i++){
-        if(strcmp(sprites[i].name,name)==0) return &sprites[i];
-    }
-    return NULL;
-}
-
-void create_sprite(const char *name){
-    if(!name || !*name){ printf("Usage: game.new sprite NAME\n"); return; }
-    if(find_sprite(name)){ printf("[game] sprite '%s' already exists\n", name); return; }
-    if(sprite_count >= 16){ printf("[game] sprite limit reached\n"); return; }
-    strncpy(sprites[sprite_count].name, name, sizeof(sprites[sprite_count].name)-1);
-    sprites[sprite_count].name[sizeof(sprites[sprite_count].name)-1] = '\0';
-    sprites[sprite_count].x = 0;
-    sprites[sprite_count].y = 0;
-    sprite_count++;
-    printf("[game] sprite '%s' created at (0,0)\n", name);
-}
-
-void draw_sprite(const char *name){
-    Sprite *s = find_sprite(name);
-    if(!s){ printf("[game] sprite '%s' not found\n", name); return; }
-    printf("[game] draw sprite '%s' at (%d,%d)\n", name, s->x, s->y);
-}
-
-void move_sprite(const char *name, int dx, int dy){
-    Sprite *s = find_sprite(name);
-    if(!s){ printf("[game] sprite '%s' not found\n", name); return; }
-    s->x += dx;
-    s->y += dy;
-    printf("[game] move '%s' to (%d,%d)\n", name, s->x, s->y);
-}
-
-void delete_sprite(const char *name){
-    int idx = -1;
-    for(int i=0;i<sprite_count;i++){
-        if(strcmp(sprites[i].name,name)==0){ idx=i; break; }
-    }
-    if(idx < 0){ printf("[game] sprite '%s' not found\n", name); return; }
-    for(int i=idx;i<sprite_count-1;i++) sprites[i] = sprites[i+1];
-    sprite_count--;
-    printf("[game] sprite '%s' deleted\n", name);
-}
-
-void list_sprites(){
-    if(sprite_count==0){ printf("[game] no sprites\n"); return; }
-    for(int i=0;i<sprite_count;i++){
-        printf("[game] sprite %s at (%d,%d)\n", sprites[i].name, sprites[i].x, sprites[i].y);
-    }
-}
-
-void store_memory(const char *key, const char *value){
-    if(!key || !*key){ printf("Usage: remember <key> <value>\n"); return; }
-    for(int i=0;i<memo_count;i++){
-        if(strcmp(memos[i].key,key)==0){ strncpy(memos[i].value,value,sizeof(memos[i].value)-1); memos[i].value[sizeof(memos[i].value)-1] = '\0'; printf("[memory] updated '%s'\n", key); return; }
-    }
-    if(memo_count >= 16){ printf("[memory] memory capacity reached\n"); return; }
-    strncpy(memos[memo_count].key,key,sizeof(memos[memo_count].key)-1);
-    memos[memo_count].key[sizeof(memos[memo_count].key)-1] = '\0';
-    strncpy(memos[memo_count].value,value,sizeof(memos[memo_count].value)-1);
-    memos[memo_count].value[sizeof(memos[memo_count].value)-1] = '\0';
-    memo_count++;
-    printf("[memory] remembered '%s'\n", key);
-}
-
-void recall_memory(const char *key){
-    if(!key || !*key){ printf("Usage: recall <key>\n"); return; }
-    for(int i=0;i<memo_count;i++){
-        if(strcmp(memos[i].key,key)==0){ printf("[memory] %s = %s\n", key, memos[i].value); return; }
-    }
-    printf("[memory] no entry found for '%s'\n", key);
-}
-
-void ai_status(const char *name){
-    Sprite *s = find_sprite(name);
-    if(!s){ printf("[ai] sprite '%s' not found\n", name); return; }
-    printf("[ai] '%s' at (%d,%d)\n", name, s->x, s->y);
-}
-
-void ai_move_to(const char *name, int tx, int ty){
-    Sprite *s = find_sprite(name);
-    if(!s){ printf("[ai] sprite '%s' not found\n", name); return; }
-    int dx = 0, dy = 0;
-    if(tx > s->x) dx = 1;
-    else if(tx < s->x) dx = -1;
-    if(ty > s->y) dy = 1;
-    else if(ty < s->y) dy = -1;
-    if(dx == 0 && dy == 0){ printf("[ai] '%s' is already at (%d,%d)\n", name, s->x, s->y); return; }
-    move_sprite(name, dx, dy);
-}
-
-void ai_think(const char *name){
-    Sprite *s = find_sprite(name);
-    if(!s){ printf("[ai] sprite '%s' not found\n", name); return; }
-    int dx = (s->x <= 0) ? 1 : -1;
-    int dy = (s->y <= 0) ? 1 : -1;
-    printf("[ai] '%s' decides to patrol toward (%d,%d)\n", name, s->x + dx, s->y + dy);
-    move_sprite(name, dx, dy);
 }
 
 Node* parse_expr();
@@ -787,18 +600,7 @@ void print_help(){
     printf("POLYNOMIAL ALGEBRA:\n");
     printf("  factor 2 3 -2                  - factor quadratic 2x²+3x-2\n");
     printf("  roots 1 -5 6                   - solve x²-5x+6=0\n");
-    printf("GAME DEV & AI:\n");
-    printf("  game.new sprite NAME            - create game sprite\n");
-    printf("  game.draw NAME                  - draw a sprite\n");
-    printf("  game.move NAME DX DY            - move a sprite\n");
-    printf("  game.delete NAME                - delete a sprite\n");
-    printf("  game.list                       - list sprites\n");
-    printf("  remember KEY VALUE              - store a memory entry\n");
-    printf("  recall KEY                      - recall a memory entry\n");
-    printf("  ai status NAME                  - show sprite status\n");
-    printf("  ai patrol NAME                  - move sprite by 1 cell toward origin\n");
-    printf("  ai goto NAME X Y                - move sprite toward target coordinates\n");
-    printf("  ai move NAME X Y                - alias for ai goto\n\n");
+    printf("  expand (x+2)^3                 - polynomial expansion\n\n");
     printf("MODES & OPTIONS:\n");
     printf("  mode binary|ternary|decimal    - number mode\n");
     printf("  steps on|off                   - step-by-step solutions\n");
@@ -837,159 +639,32 @@ void handle_line(const char *line){
         if(ci_strncasecmp(&src[pos],"ternary",7)==0){ num_mode=3; printf("Mode: ternary\n"); return; }
         if(ci_strncasecmp(&src[pos],"decimal",7)==0){ num_mode=10; printf("Mode: decimal\n"); return; }
     }
-
-    if(match_token("calc") || match_token("evaluate") || match_token("expr")){
-        skipws();
-        Node *e = parse_expr();
-        print_node(e);
-        printf("\n");
-        double v = eval(e,'x',0.0);
-        printf("=> %g\n", v);
-        return;
-    }
-
-    if(match_token("prnt") || match_token("print") || match_token("echo")){
-        skipws();
-        Node *e = parse_expr();
-        print_node(e);
-        printf("\n");
-        return;
-    }
     
     if(match("ode")){
         skipws();
-        if(match("y'")){
-            skipws();
-            if(match("=")){
-                skipws();
-                Node *expr = parse_expr();
-                solve_separable_ode(expr, 'x');
-                return;
-            }
-        }
-        printf("Unknown ode syntax. Use: ode y'=expression\n");
+        Node *expr = parse_expr();
+        solve_separable_ode(expr, 'x');
         return;
     }
-
-    if(match("game.new") || match("game new") || match("spawn") || match("create")){
-        skipws();
-        if(match("sprite")){
-            char name[32];
-            parse_token(name,sizeof(name));
-            create_sprite(name);
-            return;
-        }
-        if(match("window")){
-            printf("[game] window creation is not supported in this version.\n");
-            return;
-        }
-    }
-
-    if(match("game.draw") || match("game draw") || match("draw")){
-        char name[32];
-        parse_token(name,sizeof(name));
-        draw_sprite(name);
-        return;
-    }
-
-    if(match("game.move") || match("game move") || match("move")){
-        char name[32];
-        int dx, dy;
-        parse_token(name,sizeof(name));
-        if(!parse_int(&dx) || !parse_int(&dy)){
-            printf("Usage: game.move NAME DX DY\n");
-            return;
-        }
-        move_sprite(name, dx, dy);
-        return;
-    }
-
-    if(match("game.delete") || match("game delete") || match("delete")){
-        char name[32];
-        parse_token(name,sizeof(name));
-        delete_sprite(name);
-        return;
-    }
-
-    if(match("game.list") || match("list")){
-        list_sprites();
-        return;
-    }
-
-    if(match("remember")){
-        char key[32];
-        parse_token(key,sizeof(key));
-        skipws();
-        char value[128];
-        int i=0;
-        while(src[pos] && i < (int)sizeof(value)-1) value[i++] = src[pos++];
-        value[i] = 0;
-        store_memory(key, value);
-        return;
-    }
-
-    if(match("recall")){
-        char key[32];
-        parse_token(key,sizeof(key));
-        recall_memory(key);
-        return;
-    }
-
-    if(match("ai")){
-        skipws();
-        if(match("status")){
-            char name[32];
-            parse_token(name,sizeof(name));
-            ai_status(name);
-            return;
-        }
-        if(match("patrol")){
-            char name[32];
-            parse_token(name,sizeof(name));
-            ai_think(name);
-            return;
-        }
-        if(match("goto") || match("move")){
-            char name[32];
-            int tx, ty;
-            parse_token(name,sizeof(name));
-            if(!parse_int(&tx) || !parse_int(&ty)){
-                printf("Usage: ai goto NAME X Y\n");
-                return;
-            }
-            ai_move_to(name, tx, ty);
-            return;
-        }
-        printf("AI commands: ai status NAME | ai patrol NAME | ai goto NAME X Y | ai move NAME X Y\n");
-        return;
-    }
-
+    
     if(match("factor")){
-        double a, b, c;
-        if(!parse_number_arg(&a) || !parse_number_arg(&b) || !parse_number_arg(&c)){
-            printf("Usage: factor <a> <b> <c>\n");
-            return;
-        }
         skipws();
-        if(src[pos] != '\0'){
-            printf("Unexpected trailing input after coefficients.\n");
-            return;
-        }
+        double a = strtod(&src[pos], (char**)&src); pos = src - line;
+        skipws();
+        double b = strtod(&src[pos], (char**)&src); pos = src - line;
+        skipws();
+        double c = strtod(&src[pos], (char**)&src); pos = src - line;
         factor_quadratic(a, b, c);
         return;
     }
     
     if(match("roots")){
-        double a, b, c;
-        if(!parse_number_arg(&a) || !parse_number_arg(&b) || !parse_number_arg(&c)){
-            printf("Usage: roots <a> <b> <c>\n");
-            return;
-        }
         skipws();
-        if(src[pos] != '\0'){
-            printf("Unexpected trailing input after coefficients.\n");
-            return;
-        }
+        double a = strtod(&src[pos], (char**)&src); pos = src - line;
+        skipws();
+        double b = strtod(&src[pos], (char**)&src); pos = src - line;
+        skipws();
+        double c = strtod(&src[pos], (char**)&src); pos = src - line;
         printf("Solving %g*x² + %g*x + %g = 0:\n", a, b, c);
         factor_quadratic(a, b, c);
         return;
@@ -1019,7 +694,7 @@ void handle_line(const char *line){
     double val = eval(expr, 'x', 0.0);
     printf("Numerical value (x=0): %g\n", val);
     
-    // Note: memory freed at program exit; complex node sharing prevents safe freeing here
+    free_node(expr);
 }
 
 int main(int argc, char **argv){
