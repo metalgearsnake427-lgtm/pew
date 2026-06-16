@@ -1,0 +1,27 @@
+pew programming language
+
+pew is a compact expressive shell language built for interactive numeric and symbolic math, game-like commands, and fast experimentation.
+
+Features:
+- Symbolic derivatives and integrals
+- Definite integral approximation
+- Polynomial factoring and equation solving
+- Sprite and simple game world commands
+- Translation dictionary and explain/define lookup
+- Color and ASCII animations for a playful terminal experience
+
+Usage:
+- prnt <expr>
+- dy/dx(<expr>)
+- int(<expr>, x)
+- def.int(<expr>, x, a, b)
+- game.new sprite <name>
+- translate <word> <lang>
+- kill pew
+
+Build:
+gcc -x c "pew.C" -o pew -lm
+./pew
+
+Install:
+install -Dm755 pew ~/.local/bin/pew

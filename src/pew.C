@@ -12,7 +12,7 @@
 #endif
 
 // ============================================================================
-// PEW ADVANCED: Wolfram Alpha-level calculus, algebra, and symbolic math
+// PEW ADVANCED: Retro shell language with symbolic math, games, and shell-style commands
 // ============================================================================
 //
 // Features:
@@ -21,7 +21,7 @@
 // - Differential equations (separable, linear ODE)
 // - Polynomial algebra: factor, solve
 // - Symbolic derivatives and integrals
-// - Step-by-step solutions (Wolfram Alpha style)
+// - Step-by-step solutions with engine-style walkthroughs
 // - Advanced equation solving
 
 typedef enum {
@@ -759,11 +759,68 @@ Node* parse_primary(){
 // COMMANDS & HELP
 // ============================================================================
 
+void print_retro_graphics(){
+    const char *frames[] = {
+        "\n\033[1;35m          __   __  ______  __        __  ______\n"
+        "         /\ \ / / /\  == \\ \ \      / / /\  __ \\\n"
+        "        \ \ \\\`\/  \ \  __< \ \ \    / /  \ \ \/\ \\\n"
+        "         \ \_\ \_\   \ \_\\_\\ \_\__/ /    \ \_____\\n"
+        "          \/_/\/_/    \/_/ /_/ \/____/      \/_____/\n\033[0m\n",
+        "\n\033[1;36m             .----------------.  .----------------.\n"
+        "             | .--------------. || .--------------. |\n"
+        "             | |  _________   | || |  _________   | |\n"
+        "             | | |  _   _  |  | || | |  _   _  |  | |\n"
+        "             | | |_/ | | \_|  | || | |_/ | | \_|  | |\n"
+        "             | |     | |      | || |     | |      | |\n"
+        "             | |    _| |_     | || |    _| |_     | |\n"
+        "             | |   |_____|    | || |   |_____|    | |\n"
+        "             | |              | || |              | |\n"
+        "             | '--------------' || '--------------' |\n"
+        "             '----------------'  '----------------'\033[0m\n",
+        "\n\033[1;33m  \033[1;32m> Retro shell booting...\033[0m\033[1;33m  initializing beam matrix\033[0m\n"
+        "  \033[1;32m> Loading pew core routines...\033[0m\n"
+        "  \033[1;32m> Rendering ASCII glyphs...\033[0m\n\033[0m\n"
+    };
+
+    for(int i=0;i<3;i++){
+        printf("\033[2J\033[H");
+        printf("%s", frames[i]);
+        fflush(stdout);
+        sleep_ms(220 + i * 80);
+    }
+    printf("\033[1;34m     ____  _____  __        __  \033[1;37m__     __\033[0m\n");
+    printf("\033[1;34m    |  _ \/ ____| \ \      / /  \033[1;37m\ \   / /\033[0m\n");
+    printf("\033[1;34m    | |_) | (___   \ \ /\ / /   \033[1;37m \ \_/ / \033[0m\n");
+    printf("\033[1;34m    |  __/ \___ \   \ V  V /    \033[1;37m  \   /  \033[0m\n");
+    printf("\033[1;34m    | |    ____) |   \_/\_/     \033[1;37m   | |   \033[0m\n");
+    printf("\033[1;34m    |_|   |_____/               \033[1;37m   |_|   \033[0m\n\n");
+    sleep_ms(300);
+}
+
 void print_banner(){
-    printf("\n\033[1;36m╔════════════════════════════════════════════════════════════╗\033[0m\n");
-    printf("\033[1;36m║ PEW ADVANCED — Wolfram Alpha-level Symbolic Math Engine  ║\033[0m\n");
-    printf("\033[1;36m║ Calculus | Algebra | Differential Equations | Polynomials║\033[0m\n");
+    printf("\033[1;36m╔════════════════════════════════════════════════════════════╗\033[0m\n");
+    printf("\033[1;36m║ \033[1;97mPEW ADVANCED — Retro symbolic shell with algebra, calculus, and games\033[1;36m ║\033[0m\n");
+    printf("\033[1;36m║ \033[1;97mType \033[1;32mhelp\033[1;97m for commands, or \033[1;32mkill pew\033[1;97m for a dramatic exit\033[1;36m ║\033[0m\n");
     printf("\033[1;36m╚════════════════════════════════════════════════════════════╝\033[0m\n\n");
+}
+
+void kill_pew_animation(){
+    printf("\n\033[1;31mInitiating PEW self-destruct sequence...\033[0m\n\n");
+    const char *blast[] = {
+        "  \033[1;33m      . . . BOOM . . .\033[0m\n",
+        "  \033[1;31m    *     *     *     *\033[0m\n",
+        "  \033[1;31m  *   K I L L   P E W   *\033[0m\n",
+        "  \033[1;33m    *     *     *     *\033[0m\n",
+        "  \033[1;37m   \033[1;34m  \033[1m+++    +++    +++   \033[0m\n"
+    };
+    for(int i=0;i<5;i++){
+        printf("\033[2J\033[H");
+        printf("%s", blast[i]);
+        fflush(stdout);
+        sleep_ms(160);
+    }
+    printf("\033[1;32mPEW has been peacefully terminated. See you on the next pulse.\033[0m\n\n");
+    exit(0);
 }
 
 void print_help(){
@@ -803,6 +860,7 @@ void print_help(){
     printf("  mode binary|ternary|decimal    - number mode\n");
     printf("  steps on|off                   - step-by-step solutions\n");
     printf("  version                        - show build info\n");
+    printf("  kill pew                       - dramatic animated shutdown\n");
     printf("  help / ?                       - this help\n");
     printf("  quit / exit                    - leave pew\n");
     printf("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n");
@@ -819,9 +877,14 @@ void handle_line(const char *line){
         print_help();
         return;
     }
+
+    if(match("kill pew")){
+        kill_pew_animation();
+        return;
+    }
     
     if(match("version")){
-        printf("PEW Advanced - Wolfram Alpha-level Symbolic Math v0.5\n");
+        printf("PEW Advanced - Retro symbolic shell v0.5\n");
         return;
     }
     
@@ -1023,6 +1086,7 @@ void handle_line(const char *line){
 }
 
 int main(int argc, char **argv){
+    print_retro_graphics();
     print_banner();
     
 #ifdef USE_READLINE
