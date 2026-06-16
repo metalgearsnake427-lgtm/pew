@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Download pew — lightweight shell language</title>
+  <style>
+    body{font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;margin:2rem;background:#0f172a;color:#e6eef8}
+    .card{background:#081025;padding:1.2rem;border-radius:8px;box-shadow:0 8px 30px rgba(2,6,23,0.6)}
+    pre{background:#001122;padding:0.8rem;border-radius:6px;overflow:auto}
+    button{background:#06b6d4;color:#021124;border:0;padding:0.5rem 0.9rem;border-radius:6px;font-weight:600;cursor:pointer}
+    a.small{color:#9bd7e2}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>pew — download source</h1>
+    <p>Click the button to download the current <strong>pew.C</strong> source file and build it locally.</p>
+    <p>
+      <button id="dl">Download pew.C</button>
+      <a class="small" href="#build">Build &amp; run instructions</a>
+    </p>
+    <h3>Source preview</h3>
+    <pre id="src" style="max-height:40vh;white-space:pre-wrap;">(loading source)</pre>
+    <h3 id="build">Build &amp; run</h3>
+    <pre>gcc "pew.C" -o pew -lm
+./pew
+
+# Install to ~/.local/bin
+install -Dm755 pew ~/.local/bin/pew
+</pre>
+    <p>If you'd like a packaged binary or an installer for other OSes, generate releases from this repository.</p>
+  </div>
+
+    <script type="text/plain" id="source">
+  #include <stdio.h>
+  #include <stdlib.h>
+  #include <string.h>
+  #include <ctype.h>
+  #include <math.h>
+  #include <unistd.h>
+
+  // Minimal interpreter for the `pew` language (basic prototype)
+  // Features:
+  // - Modes: binary / ternary (affect integer literal parsing)
+  // - Simple expressions: + - * / ^ and parentheses
+  // - `prnt` statement: prints expression value or symbolic form
+  // - Yhubls: `dy/dx(expr)` for symbolic derivative w.r.t x
+  // - `int(expr, x)` for symbolic indefinite integration (power rule)
+  // - `def.int(expr, x, a, b)` numerical definite integral (trapezoid)
+  // - Tolerant parsing: `prnt expr` or `prnt(expr)` both work
+
+  typedef enum {NODE_NUM, NODE_VAR, NODE_ADD, NODE_SUB, NODE_MUL, NODE_DIV, NODE_POW} NodeType;
+
+  typedef struct Node {
+  	NodeType type;
+  	double value; // for numbers
+  	char var;     // for variable nodes (single-letter)
+  	struct Node *l, *r;
+  } Node;
+
+  // Global mode: 2 or 3
+  static int num_mode = 10; // default decimal; will set to 2 or 3 on mode commands
+
+  // --- Dictionary and translation helpers
+  typedef struct { const char *word; const char *en; const char *es; const char *fr; const char *de; } DictEntry;
+  static DictEntry dictionary[] = {
+    {"hello","hello","hola","bonjour","hallo"},
+    {"world","world","mundo","monde","welt"},
+    {"game","game","juego","jeu","spiel"},
+    {"start","start","comenzar","commencer","starten"},
+    {"player","player","jugador","joueur","spieler"},
+    {"score","score","puntuación","score","punktestand"},
+    {"move","move","mover","déplacer","bewegen"},
+    {"jump","jump","saltar","sauter","springen"},
+    {"run","run","correr","courir","laufen"},
+    {"level","level","nivel","niveau","niveau"},
+    {"enemy","enemy","enemigo","ennemi","feind"},
+    {"health","health","salud","santé","gesundheit"},
+    {"coin","coin","moneda","pièce","münze"},
+    {"speed","speed","velocidad","vitesse","geschwindigkeit"},
+    {"jump","jump","saltar","sauter","springen"},
+    {"attack","attack","ataque","attaque","angriff"},
+    {"shield","shield","escudo","bouclier","schild"},
+    {"level","level","nivel","niveau","niveau"},
+    {"boss","boss","jefe","boss","boss"},
+    {"score","score","puntuación","score","punktestand"},
+    {"power","power","poder","puissance","kraft"},
+    {"win","win","ganar","gagner","gewinnen"},
+    {"lose","lose","perder","perdre","verlieren"},
+    {"hero","hero","héroe","héros","held"},
+    {"world","world","mundo","monde","welt"},
+    {"level","level","nivel","niveau","niveau"},
+    {"sound","sound","sonido","son","klang"},
+    {"music","music","música","musique","musik"}
+  };
+  static int dictionary_size = sizeof(dictionary)/sizeof(dictionary[0]);
+  static const char *language_names[] = {"en", "es", "fr", "de"};
+  typedef struct { const char *term; const char *explanation; } GlossaryEntry;
+  static const char *pew_keywords[] = {
+    "help", "h", "quit", "exit", "bye", "kill pew", "prnt", "print", "echo", "translate",
+    "explain", "define", "study", "mode binary", "mode ternary", "mode decimal", "set mode binary",
+    "set mode ternary", "clear", "calc", "evaluate", "expr", "game.new window", "game.new sprite",
+    "create sprite", "spawn sprite", "draw", "move", "list", "delete sprite", "game.list",
+    "dy/dx", "int", "def.int"
+  };
+  static GlossaryEntry glossary[] = {
+    {"pew", "A compact shell language mixing simple math, text play, and tiny game objects."},
+    {"binary", "Read numbers in base 2: only 0 and 1 digits are valid unless prefixes change the mode."},
+    {"ternary", "Read numbers in base 3: digits are 0, 1, and 2 for a more exotic numeric mode."},
+    {"decimal", "The normal base 10 number mode used for everyday arithmetic."},
+    {"dy/dx", "Compute a symbolic derivative with respect to x for simple expressions."},
+    {"int", "Compute a limited symbolic integral using power rules for x^n and constants."},
+    {"def.int", "Compute a numeric definite integral from a to b using a trapezoid approximation."},
+    {"game.new window", "Create a simple text-based game window placeholder."},
+    {"game.new sprite", "Create a named sprite object that can move and draw in the shell."},
+    {"sprite", "A named object with x,y position used in game-like commands."},
+    {"kill pew", "A dramatic shell exit that plays a colorful bird death animation."},
+    {"anthony burgess", "An invitation to define a term in a vivid literary-technical voice, without quoting his work."},
+    {"explain", "Ask pew to give a compact meaning for a term or keyword in this language."},
+    {"translate", "Look up a built-in word and show it in another language."},
+    {"clear", "Clear the terminal screen and reset the workspace display."},
+    {"mode", "Switch how numeric literals are interpreted: binary, ternary, or decimal."},
+    {"run", "A synonym for express, evaluate or execute a calculation in the shell."}
+  };
+  static const char *pew_version = "0.3";
+  static const char *build_stamp = __DATE__ " " __TIME__;
+  static char program_path[256] = "";
+
+  void print_banner(){
+    printf("\033[1;34mpew %s\033[0m — small expressive shell language\n", pew_version);
+    printf("built %s\n", build_stamp);
+    if(program_path[0]) printf("binary: %s\n", program_path);
+    printf("Type 'help' for commands and 'version' to verify the build.\n\n");
+  }
+
+  void print_version(){
+    printf("pew version %s\n", pew_version);
+    printf("build %s\n", build_stamp);
+    if(program_path[0]) printf("path %s\n", program_path);
+  }
+
+  // --- Game development helpers
+  typedef struct { char name[32]; int x,y; } Sprite;
+  static Sprite sprites[16];
+  static int sprite_count = 0;
+
+  // --- Memory helpers
+  Node *mknum(double v){ Node *n = malloc(sizeof(Node)); memset(n,0,sizeof(Node)); n->type=NODE_NUM; n->value=v; return n; }
+  Node *mkvar(char c){ Node *n = malloc(sizeof(Node)); memset(n,0,sizeof(Node)); n->type=NODE_VAR; n->var=c; return n; }
+  Node *mknode(NodeType t, Node*l, Node*r){ Node *n = malloc(sizeof(Node)); memset(n,0,sizeof(Node)); n->type=t; n->l=l; n->r=r; return n; }
+
+  // --- Printing AST
+  void print_node(Node *n){
+  	if(!n) return;
+  	switch(n->type){
+  		case NODE_NUM: printf("%g", n->value); break;
+  		case NODE_VAR: printf("%c", n->var); break;
+  		case NODE_ADD: printf("("); print_node(n->l); printf(" + "); print_node(n->r); printf(")"); break;
+  		case NODE_SUB: printf("("); print_node(n->l); printf(" - "); print_node(n->r); printf(")"); break;
+  		case NODE_MUL: printf("("); print_node(n->l); printf(" * "); print_node(n->r); printf(")"); break;
+  		case NODE_DIV: printf("("); print_node(n->l); printf(" / "); print_node(n->r); printf(")"); break;
+  		case NODE_POW: printf("("); print_node(n->l); printf(" ^ "); print_node(n->r); printf(")"); break;
+  	}
+  }
+
+  // ... (truncated in HTML preview for brevity) ...
+  <script>
+    // Inject the current pew.C source into the page so users can download without external hosting.
+    // This block will be replaced by the build process or can be edited manually to include the source.
+  </script>
+  <script>
+    // Embed the source into the page (the server or repo can paste content into the script tag).
+    const srcEl = document.getElementById('source');
+    const preview = document.getElementById('src');
+    let text = srcEl.textContent.trim();
+    if(!text){
+      // Fallback: request the source alongside the HTML if hosted; otherwise show instructions
+      preview.textContent = 'Source not embedded. If you opened this file locally, put pew.C into the same folder or embed the source in the HTML.';
+    } else {
+      preview.textContent = text;
+    }
+    document.getElementById('dl').addEventListener('click', ()=>{
+      if(!text){ alert('No source embedded to download.'); return; }
+      const blob = new Blob([text], {type:'text/plain;charset=utf-8'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url; a.download = 'pew.C'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+    });
+  </script>
+  </body>
+  </html>
+</body>
+</html>
