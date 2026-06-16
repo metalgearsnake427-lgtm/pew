@@ -1,5 +1,5 @@
 # pew-programming-language
-This is a programming languag made in C (ongoin working) With the help of AI and with my help 
+This is a programming language made in C (ongoing working) All by myself (with the help of AI also)
 
 
 pew — advanced shell-style programming language
