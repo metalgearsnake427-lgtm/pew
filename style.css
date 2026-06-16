@@ -1,0 +1,70 @@
+*{box-sizing:border-box;margin:0;padding:0}
+:root{color-scheme:dark;color:#edf2ff;background:#020617;font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
+html,body{min-height:100%}
+body{position:relative;overflow-x:hidden}
+.background{position:fixed;inset:0;pointer-events:none}
+.glow{position:absolute;border-radius:50%;filter:blur(120px);opacity:.45;mix-blend-mode:screen}
+.glow-1{width:420px;height:420px;background:#38bdf8;top:-80px;left:-80px}
+.glow-2{width:360px;height:360px;background:#7c3aed;top:20%;left:60%;opacity:.35}
+.glow-3{width:260px;height:260px;background:#22c55e;top:60%;left:15%;opacity:.28}
+.site-header{position:relative;display:flex;justify-content:space-between;align-items:center;padding:2rem;max-width:1180px;margin:0 auto}
+.brand p{color:#cbd5e1;max-width:36rem;margin-top:.5rem;line-height:1.7}
+.logo{font-size:2.1rem;font-weight:800;letter-spacing:.12em;color:#f8fafc}
+nav a{color:#94a3b8;text-decoration:none;margin-left:1.5rem;font-size:.98rem;transition:.2s}
+nav a:hover{color:#ffffff}
+.hero-card{display:grid;grid-template-columns:1.1fr .9fr;gap:2rem;max-width:1180px;margin:0 auto;padding:0 2rem}
+.hero-copy{padding:3rem 0}
+.eyebrow{color:#22c55e;font-size:.95rem;font-weight:700;text-transform:uppercase;letter-spacing:.18em;margin-bottom:1rem}
+.hero-copy h1{font-size:3.05rem;line-height:1.05;max-width:720px;color:#f8fafc}
+.hero-text{margin:1.5rem 0 2rem;color:#cbd5e1;max-width:42rem;line-height:1.8}
+.hero-actions{display:flex;gap:1rem;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;justify-content:center;padding:.95rem 1.6rem;border-radius:999px;font-weight:700;transition:all .2s ease}
+.btn-primary{background:#38bdf8;color:#020617}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 18px 50px rgba(56,189,248,.2)}
+.btn-secondary{background:rgba(255,255,255,.08);color:#e2e8f0;border:1px solid rgba(226,232,240,.12)}
+.hero-panel{display:grid;gap:1.5rem}
+.terminal-frame{background:rgba(15,23,42,.95);border:1px solid rgba(148,163,184,.18);border-radius:28px;overflow:hidden;backdrop-filter:blur(18px);box-shadow:0 30px 80px rgba(0,0,0,.35)}
+.terminal-header{display:flex;gap:.6rem;padding:1rem}
+.dot{width:.9rem;height:.9rem;border-radius:50%;display:inline-block}
+.red{background:#f97316}
+.yellow{background:#facc15}
+.green{background:#22c55e}
+.terminal-frame pre{padding:1.5rem;font-family:ui-monospace,Menlo,Monaco,Consolas,'Liberation Mono','Courier New',monospace;font-size:.95rem;line-height:1.55;color:#dbeafe;overflow-x:auto}
+.stat-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1rem}
+.stat-grid div{background:rgba(15,23,42,.95);border:1px solid rgba(148,163,184,.1);padding:1.2rem 1.4rem;border-radius:18px;backdrop-filter:blur(16px);box-shadow:0 20px 40px rgba(2,12,32,.24);transform:translateY(0);animation:float 12s ease-in-out infinite;animation-delay:-1s}
+.stat-grid strong{display:block;font-size:1.05rem;color:#ffffff;margin-bottom:.55rem}
+.stat-grid p{color:#cbd5e1;line-height:1.75;font-size:.95rem}
+.features-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1rem;max-width:1180px;margin:3rem auto 0;padding:0 2rem}
+.feature-card{background:rgba(15,23,42,.95);border:1px solid rgba(148,163,184,.1);border-radius:24px;padding:2rem;line-height:1.8;color:#cbd5e1;box-shadow:0 30px 60px rgba(0,0,0,.12);transition:transform .25s ease,box-shadow .25s ease}
+.feature-card:hover{transform:translateY(-6px);box-shadow:0 36px 80px rgba(2,12,32,.28)}
+.feature-card h2{margin-bottom:1rem;color:#ffffff}
+.site-footer{max-width:1180px;margin:3rem auto 2rem;padding:0 2rem;color:#94a3b8;font-size:.95rem;text-align:center}
+.source-box{background:rgba(15,23,42,.9);border:1px solid rgba(148,163,184,.15);border-radius:18px;padding:1rem;max-height:440px;overflow:auto;box-shadow:0 30px 60px rgba(0,0,0,.15)}
+.download-wrapper{display:grid;gap:2rem;max-width:1180px;margin:3rem auto;padding:0 2rem}
+.download-panel{display:grid;gap:1.25rem;padding:2rem;background:rgba(15,23,42,.95);border:1px solid rgba(148,163,184,.14);border-radius:28px;box-shadow:0 40px 80px rgba(2,12,32,.25)}
+.download-hero h1{font-size:2.7rem;margin-bottom:1rem;color:#f8fafc}
+.download-hero p{color:#cbd5e1;line-height:1.75;max-width:34rem}
+.download-actions{display:flex;flex-wrap:wrap;gap:1rem;margin-top:1.5rem}
+.download-info{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem}
+.download-info section{background:rgba(15,23,42,.95);border:1px solid rgba(148,163,184,.12);border-radius:24px;padding:1.7rem;box-shadow:0 30px 60px rgba(0,0,0,.12)}
+.download-info h2{color:#f8fafc;margin-bottom:1rem}
+.about-shell{max-width:980px;margin:3rem auto;padding:0 2rem}
+.nav-back{display:inline-block;margin-bottom:1.5rem;color:#94a3b8;text-decoration:none;transition:color .2s}
+.nav-back:hover{color:#f8fafc}
+.about-card{background:rgba(15,23,42,.95);border:1px solid rgba(148,163,184,.12);border-radius:28px;padding:2.5rem;box-shadow:0 40px 80px rgba(2,12,32,.22);color:#cbd5e1}
+.about-card h1{font-size:2.8rem;color:#f8fafc;margin-bottom:1rem}
+.about-card section{margin-top:1.8rem}
+.about-card ul{margin-top:1rem;list-style:disc inside;line-height:1.8}
+.about-card li{margin-top:.8rem}
+.about-card code{background:rgba(148,163,184,.12);padding:.15rem .35rem;border-radius:.35rem;color:#e2e8f0}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+@keyframes glowMove{0%{transform:translate(-10%,0)}50%{transform:translate(10%,10%)}100%{transform:translate(-10%,0)}}
+.glow-1{animation:glowMove 22s ease-in-out infinite}
+.glow-2{animation:glowMove 28s ease-in-out infinite;animation-delay:-5s}
+.glow-3{animation:glowMove 20s ease-in-out infinite;animation-delay:-7s}
+.btn:hover{transform:translateY(-2px);}
+.btn-primary{box-shadow:0 18px 40px rgba(56,189,248,.18)}
+.terminal-frame{animation:fadeInPanel .75s ease forwards}
+@keyframes fadeInPanel{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:960px){.hero-card{grid-template-columns:1fr}.stat-grid{grid-template-columns:1fr}.site-header{flex-direction:column;align-items:flex-start}.download-info{grid-template-columns:1fr}.download-wrapper{padding:0 1rem}}
+@media(max-width:680px){.hero-copy h1{font-size:2.2rem}}
