@@ -1,5 +1,5 @@
-CC = gcc
-CFLAGS = -O2 -Wall -Wextra -std=c11 -DUSE_READLINE
+CC = g++
+CFLAGS = -O2 -Wall -Wextra -std=c++11 -DUSE_READLINE
 LDFLAGS = -lm -lreadline
 VERSION = 0.3
 BIN = pew
@@ -7,7 +7,7 @@ BIN = pew
 all: build
 
 build:
-	$(CC) $(CFLAGS) -x c "pew.C" -o $(BIN) $(LDFLAGS)
+	$(CC) $(CFLAGS) "pew.C" -o $(BIN) $(LDFLAGS)
 
 install: build
 	install -Dm755 $(BIN) $(HOME)/.local/bin/$(BIN)
