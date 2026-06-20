@@ -1,0 +1,88 @@
+VIDM Development Roadmap
+
+Phase 1 — Foundation
+
+[ ] Setup project structure
+
+VIDM/
+├── include/
+├── src/
+├── gui/
+├── plugins/
+├── assets/
+├── tests/
+└── docs/
+
+[ ] Configure CMake
+[ ] Configure Qt6
+[ ] Configure FFmpeg
+[ ] Configure SDL2
+
+Phase 2 — Playback Engine
+
+[ ] Open media file
+[ ] Decode video
+[ ] Decode audio
+[ ] Play video
+[ ] Play audio
+[ ] Pause
+[ ] Resume
+[ ] Stop
+[ ] Seek
+[ ] Replay
+
+Phase 3 — Playlist System
+
+[ ] Add file
+[ ] Remove file
+[ ] Move file
+[ ] Queue system
+[ ] Save playlist
+[ ] Load playlist
+[ ] Search playlist
+[ ] Shuffle
+[ ] Repeat
+
+Phase 4 — GUI
+
+[ ] Main window
+[ ] Video widget
+[ ] Playlist panel
+[ ] Timeline
+[ ] Volume slider
+[ ] Settings window
+[ ] Theme support
+
+Phase 5 — Plugin Studio
+
+[ ] Plugin manager
+[ ] Plugin loader
+[ ] Plugin creator
+[ ] Plugin marketplace
+[ ] Plugin templates
+
+Phase 6 — Visualizer
+
+[ ] Spectrum analyzer
+[ ] Waveform
+[ ] Circular spectrum
+[ ] Particle visualizer
+[ ] Custom visualizer API
+
+Phase 7 — Advanced Features
+
+[ ] SQLite media library
+[ ] Album artwork
+[ ] Favorites
+[ ] Recently played
+[ ] Metadata editor
+[ ] Audio DSP engine
+[ ] Spatial audio engine
+
+Phase 8 — Release
+
+[ ] Testing
+[ ] Documentation
+[ ] Screenshots
+[ ] Example plugins
+[ ] GitHub release
