@@ -1,0 +1,21 @@
+[package]
+name = "git-blame-human"
+version = "0.1.0"
+edition = "2021"
+description = "Turns your git history into a human story — no AI, no API, pure analysis"
+license = "MIT"
+
+[[bin]]
+name = "git-blame-human"
+path = "src/main.rs"
+
+[dependencies]
+clap    = { version = "4.0", features = ["derive"] }
+colored = "2.0"
+chrono  = "0.4"
+
+[profile.release]
+opt-level     = 3
+strip         = true
+lto           = true
+codegen-units = 1
