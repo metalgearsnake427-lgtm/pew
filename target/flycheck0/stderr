@@ -1,17 +1,5 @@
-    Updating crates.io index
-error: failed to get `chrono` as a dependency of package `git-blame-human v0.1.0 (/home/panguinprogrammer/programming lan)`
-
-Caused by:
-  failed to load source for dependency `chrono`
-
-Caused by:
-  unable to update registry `crates-io`
-
-Caused by:
-  download of config.json failed
-
-Caused by:
-  curl failed
-
-Caused by:
-  [28] Timeout was reached (Connection timed out after 30002 milliseconds)
+error: can't find bin `git-blame-human` at path `/home/panguinprogrammer/programming lan/src/main.rs`
+ --> /home/panguinprogrammer/programming lan/Cargo.toml
+error: can't find bin `git-blame-human` at path `/home/panguinprogrammer/programming lan/src/main.rs`
+ --> /home/panguinprogrammer/programming lan/Cargo.toml
+error: could not compile due to 2 previous target resolution errors

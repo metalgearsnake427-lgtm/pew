@@ -2,6 +2,8 @@ mod git;
 mod emotion;
 mod narrative;
 mod display;
+mod story;
+
 
 use clap::Parser;
 use colored::*;
