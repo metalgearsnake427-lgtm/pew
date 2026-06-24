@@ -1,0 +1,265 @@
+openapi: 3.1.0
+info:
+  title: Api
+  version: 0.1.0
+  description: Architecture Studio API
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: projects
+    description: Architecture projects portfolio
+  - name: services
+    description: Studio services offered
+  - name: testimonials
+    description: Client testimonials
+  - name: contact
+    description: Contact inquiries
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      description: Returns server health status
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /projects:
+    get:
+      operationId: listProjects
+      tags: [projects]
+      summary: List all portfolio projects
+      responses:
+        "200":
+          description: List of projects
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Project"
+
+  /projects/{id}:
+    get:
+      operationId: getProject
+      tags: [projects]
+      summary: Get a single project
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Project details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Project"
+        "404":
+          description: Not found
+
+  /projects/featured:
+    get:
+      operationId: getFeaturedProjects
+      tags: [projects]
+      summary: Get featured/hero projects
+      responses:
+        "200":
+          description: Featured projects
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Project"
+
+  /projects/stats:
+    get:
+      operationId: getProjectStats
+      tags: [projects]
+      summary: Get portfolio statistics
+      responses:
+        "200":
+          description: Portfolio stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProjectStats"
+
+  /services:
+    get:
+      operationId: listServices
+      tags: [services]
+      summary: List all studio services
+      responses:
+        "200":
+          description: List of services
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Service"
+
+  /testimonials:
+    get:
+      operationId: listTestimonials
+      tags: [testimonials]
+      summary: List client testimonials
+      responses:
+        "200":
+          description: List of testimonials
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Testimonial"
+
+  /contact:
+    post:
+      operationId: submitContact
+      tags: [contact]
+      summary: Submit a contact inquiry
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ContactInput"
+      responses:
+        "201":
+          description: Inquiry submitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContactSubmission"
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+
+    Project:
+      type: object
+      required: [id, title, category, description, imageUrl, featured, year]
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        category:
+          type: string
+          enum: [residential, commercial, interior, landscape, renovation]
+        description:
+          type: string
+        imageUrl:
+          type: string
+        featured:
+          type: boolean
+        year:
+          type: integer
+        location:
+          type: ["string", "null"]
+        area:
+          type: ["string", "null"]
+        client:
+          type: ["string", "null"]
+        tags:
+          type: array
+          items:
+            type: string
+
+    ProjectStats:
+      type: object
+      required: [totalProjects, completedProjects, happyClients, awardsWon, yearsOfExperience]
+      properties:
+        totalProjects:
+          type: integer
+        completedProjects:
+          type: integer
+        happyClients:
+          type: integer
+        awardsWon:
+          type: integer
+        yearsOfExperience:
+          type: integer
+
+    Service:
+      type: object
+      required: [id, title, description, icon]
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+        icon:
+          type: string
+        features:
+          type: array
+          items:
+            type: string
+
+    Testimonial:
+      type: object
+      required: [id, name, role, company, quote, rating]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        role:
+          type: string
+        company:
+          type: string
+        quote:
+          type: string
+        rating:
+          type: integer
+        avatarUrl:
+          type: ["string", "null"]
+
+    ContactInput:
+      type: object
+      required: [name, email, message, projectType]
+      properties:
+        name:
+          type: string
+          minLength: 2
+        email:
+          type: string
+        message:
+          type: string
+          minLength: 10
+        projectType:
+          type: string
+        phone:
+          type: ["string", "null"]
+        budget:
+          type: ["string", "null"]
+
+    ContactSubmission:
+      type: object
+      required: [id, createdAt]
+      properties:
+        id:
+          type: integer
+        createdAt:
+          type: string
