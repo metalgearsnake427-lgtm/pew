@@ -1,5 +1,8 @@
 # pew-programming-language
 
+A shell-style programming language written in C
+
+
 This is a programming language made in C, built as a compact retro shell for symbolic math, calculus, and simple game-style commands.
 
 pew — advanced shell-style programming language
